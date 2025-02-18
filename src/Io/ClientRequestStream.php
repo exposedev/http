@@ -233,6 +233,9 @@ class ClientRequestStream extends EventEmitter implements WritableStreamInterfac
             // re-emit HTTP response body to trigger body parsing if parts of it are buffered
             if ($bodyChunk !== '') {
                 $input->handleData($bodyChunk);
+                if ($this->responseIsAnUpgradeResponse($response)) {
+                    $body->emit('data', array($bodyChunk));
+                }
             } elseif ($length === 0) {
                 $input->handleEnd();
             }
