@@ -1,5 +1,83 @@
 # Changelog
 
+## 1.11.0 (2024-11-20)
+
+*   Feature: Improve PHP 8.4+ support by avoiding implicitly nullable types.
+    (#537 by @clue)
+
+*   Feature: Allow underscore character in Uri host.
+    (#524 by @lulhum)
+
+*   Improve test suite to fix expected error code when ext-sockets is not enabled.
+    (#539 by @WyriHaximus)
+
+## 1.10.0 (2024-03-27)
+
+*   Feature: Add new PSR-7 implementation and remove dated RingCentral PSR-7 dependency.
+    (#518, #519, #520 and #522 by @clue)
+
+    This changeset allows us to maintain our own PSR-7 implementation and reduce
+    dependencies on external projects. It also improves performance slightly and
+    does not otherwise affect our public API. If you want to explicitly install
+    the old RingCentral PSR-7 dependency, you can still install it like this:
+
+    ```bash
+    composer require ringcentral/psr7
+    ```
+
+*   Feature: Add new `Uri` class for new PSR-7 implementation.
+    (#521 by @clue)
+
+*   Feature: Validate outgoing HTTP message headers and reject invalid messages.
+    (#523 by @clue)
+
+*   Feature: Full PHP 8.3 compatibility.
+    (#508 by @clue)
+
+*   Fix: Fix HTTP client to omit `Transfer-Encoding: chunked` when streaming empty request body.
+    (#516 by @clue)
+
+*   Fix: Ensure connection close handler is cleaned up for each request.
+    (#515 by @WyriHaximus)
+
+*   Update test suite and avoid unhandled promise rejections.
+    (#501 and #502 by @clue)
+
+## 1.9.0 (2023-04-26)
+
+This is a **SECURITY** and feature release for the 1.x series of ReactPHP's HTTP component.
+
+*   Security fix: This release fixes a medium severity security issue in ReactPHP's HTTP server component
+    that affects all versions between `v0.8.0` and `v1.8.0`. All users are encouraged to upgrade immediately.
+    (CVE-2023-26044 reported and fixed by @WyriHaximus)
+
+*   Feature: Support HTTP keep-alive for HTTP client (reusing persistent connections).
+    (#481, #484, #486 and #495 by @clue)
+
+    This feature offers significant performance improvements when sending many
+    requests to the same host as it avoids recreating the underlying TCP/IP
+    connection and repeating the TLS handshake for secure HTTPS requests.
+
+    ```php
+    $browser = new React\Http\Browser();
+
+    // Up to 300% faster! HTTP keep-alive is enabled by default
+    $response = React\Async\await($browser->get('https://httpbingo.org/redirect/6'));
+    assert($response instanceof Psr\Http\Message\ResponseInterface);
+    ```
+
+*   Feature: Add `Request` class to represent outgoing HTTP request message.
+    (#480 by @clue)
+
+*   Feature: Preserve request method and body for `307 Temporary Redirect` and `308 Permanent Redirect`.
+    (#442 by @dinooo13)
+
+*   Feature: Include buffer logic to avoid dependency on reactphp/promise-stream.
+    (#482 by @clue)
+
+*   Improve test suite and project setup and report failed assertions.
+    (#478 by @clue, #487 and #491 by @WyriHaximus and #475 and #479 by @SimonFrings)
+
 ## 1.8.0 (2022-09-29)
 
 *   Feature: Support for default request headers.

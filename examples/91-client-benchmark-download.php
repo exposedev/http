@@ -1,7 +1,7 @@
 <?php
 
 // a) simple download benchmark against public HTTP endpoint:
-// $ php examples/91-client-benchmark-download.php http://httpbin.org/get
+// $ php examples/91-client-benchmark-download.php http://httpbingo.org/get
 
 // b) local 10 GB download benchmark against localhost address to avoid network overhead
 //
@@ -29,8 +29,7 @@ $client = new Browser();
 echo 'Requesting ' . $url . '…' . PHP_EOL;
 
 $client->requestStreaming('GET', $url)->then(function (ResponseInterface $response) {
-    echo 'Headers received' . PHP_EOL;
-    echo RingCentral\Psr7\str($response);
+    echo 'Received ' . $response->getStatusCode() . ' ' . $response->getReasonPhrase() . PHP_EOL;
 
     $stream = $response->getBody();
     assert($stream instanceof ReadableStreamInterface);

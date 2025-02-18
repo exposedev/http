@@ -1026,4 +1026,44 @@ final class MultipartParserTest extends TestCase
         $this->assertTrue(isset($files['file4']));
         $this->assertSame(UPLOAD_ERR_OK, $files['file4']->getError());
     }
+
+    public function testWeOnlyParseTheAmountOfMultiPartChunksWeConfigured()
+    {
+        $chunkCount = 5000000;
+        $boundary = "---------------------------12758086162038677464950549563";
+
+        $chunk = "--$boundary\r\n";
+        $chunk .= "Content-Disposition: form-data; name=\"f\"\r\n";
+        $chunk .= "\r\n";
+        $chunk .= "u\r\n";
+        $data = '';
+        $data .= str_repeat($chunk, $chunkCount);
+        $data .= "--$boundary--\r\n";
+
+        $request = new ServerRequest('POST', 'http://example.com/', array(
+            'Content-Type' => 'multipart/form-data; boundary=' . $boundary,
+        ), $data, 1.1);
+
+        $parser = new MultipartParser();
+
+        $reflectecClass = new \ReflectionClass('\React\Http\Io\MultipartParser');
+        $requestProperty = $reflectecClass->getProperty('request');
+        $requestProperty->setAccessible(true);
+        $cursorProperty = $reflectecClass->getProperty('cursor');
+        $cursorProperty->setAccessible(true);
+        $multipartBodyPartCountProperty = $reflectecClass->getProperty('multipartBodyPartCount');
+        $multipartBodyPartCountProperty->setAccessible(true);
+        $maxMultipartBodyPartsProperty = $reflectecClass->getProperty('maxMultipartBodyParts');
+        $maxMultipartBodyPartsProperty->setAccessible(true);
+        $parseBodyMethod = $reflectecClass->getMethod('parseBody');
+        $parseBodyMethod->setAccessible(true);
+
+        $this->assertSame(0, $cursorProperty->getValue($parser));
+
+        $requestProperty->setValue($parser, $request);
+        $parseBodyMethod->invoke($parser, '--' . $boundary, $data);
+
+        $this->assertSame(strlen(str_repeat($chunk, $multipartBodyPartCountProperty->getValue($parser))), $cursorProperty->getValue($parser) + 2);
+        $this->assertSame($multipartBodyPartCountProperty->getValue($parser), $maxMultipartBodyPartsProperty->getValue($parser) + 1);
+    }
 }

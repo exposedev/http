@@ -16,13 +16,13 @@ $data = array(
 );
 
 $client->post(
-    'https://httpbin.org/post',
+    'https://httpbingo.org/post',
     array(
         'Content-Type' => 'application/json'
     ),
     json_encode($data)
 )->then(function (ResponseInterface $response) {
-    echo (string)$response->getBody();
+    echo (string) $response->getBody();
 }, function (Exception $e) {
     echo 'Error: ' . $e->getMessage() . PHP_EOL;
 });

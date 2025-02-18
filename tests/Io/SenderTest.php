@@ -5,6 +5,7 @@ namespace React\Tests\Http\Io;
 use Psr\Http\Message\RequestInterface;
 use React\Http\Client\Client as HttpClient;
 use React\Http\Io\ClientConnectionManager;
+use React\Http\Io\EmptyBodyStream;
 use React\Http\Io\ReadableBodyStream;
 use React\Http\Io\Sender;
 use React\Http\Message\Request;
@@ -27,7 +28,9 @@ class SenderTest extends TestCase
 
     public function testCreateFromLoop()
     {
-        $sender = Sender::createFromLoop($this->loop, null);
+        $connector = $this->getMockBuilder('React\Socket\ConnectorInterface')->getMock();
+
+        $sender = Sender::createFromLoop($this->loop, $connector);
 
         $this->assertInstanceOf('React\Http\Io\Sender', $sender);
     }
@@ -261,6 +264,21 @@ class SenderTest extends TestCase
         $sender = new Sender($client);
 
         $request = new Request('GET', 'http://www.google.com/');
+        $sender->send($request);
+    }
+
+    public function testSendGetWithEmptyBodyStreamWillNotPassContentLengthOrTransferEncodingHeader()
+    {
+        $client = $this->getMockBuilder('React\Http\Client\Client')->disableOriginalConstructor()->getMock();
+        $client->expects($this->once())->method('request')->with($this->callback(function (RequestInterface $request) {
+            return !$request->hasHeader('Content-Length') && !$request->hasHeader('Transfer-Encoding');
+        }))->willReturn($this->getMockBuilder('React\Http\Io\ClientRequestStream')->disableOriginalConstructor()->getMock());
+
+        $sender = new Sender($client);
+
+        $body = new EmptyBodyStream();
+        $request = new Request('GET', 'http://www.google.com/', array(), $body);
+
         $sender->send($request);
     }
 
